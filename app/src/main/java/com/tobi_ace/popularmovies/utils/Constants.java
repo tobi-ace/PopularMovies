@@ -1,4 +1,4 @@
-package com.tobi_ace.popularmovies.Utils;
+package com.tobi_ace.popularmovies.utils;
 
 /**
  * Created by abdulgafar on 4/15/17.

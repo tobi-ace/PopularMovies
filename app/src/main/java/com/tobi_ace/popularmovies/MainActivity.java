@@ -16,9 +16,9 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.tobi_ace.popularmovies.MovieAdapter.MovieAdapterOnClickHandler;
-import com.tobi_ace.popularmovies.Utils.Constants;
-import com.tobi_ace.popularmovies.Utils.NetworkUtils;
-import com.tobi_ace.popularmovies.Utils.PopularMoviesJsonUtils;
+import com.tobi_ace.popularmovies.utils.Constants;
+import com.tobi_ace.popularmovies.utils.NetworkUtils;
+import com.tobi_ace.popularmovies.utils.PopularMoviesJsonUtils;
 
 import org.json.JSONException;
 

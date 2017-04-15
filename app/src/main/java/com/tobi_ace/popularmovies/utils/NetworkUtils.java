@@ -1,4 +1,4 @@
-package com.tobi_ace.popularmovies.Utils;
+package com.tobi_ace.popularmovies.utils;
 
 import android.net.Uri;
 

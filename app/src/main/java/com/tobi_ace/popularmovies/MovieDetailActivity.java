@@ -6,7 +6,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.squareup.picasso.Picasso;
-import com.tobi_ace.popularmovies.Utils.Constants;
+import com.tobi_ace.popularmovies.utils.Constants;
 
 public class MovieDetailActivity extends AppCompatActivity {
 

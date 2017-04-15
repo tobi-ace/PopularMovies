@@ -4,7 +4,7 @@ import android.graphics.Bitmap;
 import android.os.Parcel;
 import android.os.Parcelable;
 
-import com.tobi_ace.popularmovies.Utils.NetworkUtils;
+import com.tobi_ace.popularmovies.utils.NetworkUtils;
 
 /**
  * Created by abdulgafar on 4/9/17.
