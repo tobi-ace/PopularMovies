@@ -1,0 +1,13 @@
+<resources>
+    <string name="app_name">Popular Movies</string>
+    <string name="error_message">An error has occurred. Please try again</string>
+    <string name="action_most_popular">Most Popular</string>
+    <string name="action_top_rated">Top Rated</string>
+
+    <!--Sort Dailog-->
+    <string name="sort_dialog_most_popular">Most Popular</string>
+    <string name="sort_dialog_top_rated">Top Rated</string>
+    <string name="overview_text">OVERVIEW</string>
+    <string name="release_date_text">Release Date</string>
+    <string name="user_rating_text">User Rating</string>
+</resources>
