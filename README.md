@@ -1,4 +1,4 @@
-#Popular Movies
+<b>Popular Movies</b>
 
 The application uses The MoviesDB API to fetch a list of Popular Movies
 
