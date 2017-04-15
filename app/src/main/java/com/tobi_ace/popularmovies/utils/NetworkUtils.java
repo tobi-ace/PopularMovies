@@ -21,7 +21,7 @@ public class NetworkUtils {
 
     private static final String TMDB_BASE_IMAGE_URL = "https://image.tmdb.org/t/p";
 
-    private static final String API_KEY = "d1d397c8adf94068653d3465f3bf4f54"; //API key goes here
+    private static final String API_KEY = ""; //API key goes here
 
     private static final String API_KEY_PARAM = "api_key";
 
