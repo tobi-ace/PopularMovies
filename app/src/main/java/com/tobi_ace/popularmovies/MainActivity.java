@@ -1,19 +1,19 @@
 package com.tobi_ace.popularmovies;
 
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
+import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.tobi_ace.popularmovies.MovieAdapter.MovieAdapterOnClickHandler;
 import com.tobi_ace.popularmovies.utils.Constants;
@@ -38,7 +38,7 @@ public class MainActivity extends AppCompatActivity implements MovieAdapterOnCli
     private RecyclerView recyclerView;
     private TextView errorText;
     private ProgressBar progressBar;
-    private GridLayoutManager layoutManager;
+    private StaggeredGridLayoutManager layoutManager;
 
 
     @Override
@@ -50,7 +50,7 @@ public class MainActivity extends AppCompatActivity implements MovieAdapterOnCli
 
         progressBar = (ProgressBar) findViewById(R.id.progress_bar);
         errorText = (TextView) findViewById(R.id.tv_error_text);
-        layoutManager = new GridLayoutManager(this,2);
+        layoutManager = new StaggeredGridLayoutManager(2,GridLayoutManager.VERTICAL);
 
         recyclerView = (RecyclerView) findViewById(R.id.rv_movies);
 
@@ -78,9 +78,8 @@ public class MainActivity extends AppCompatActivity implements MovieAdapterOnCli
 
     @Override
     public void onClick(Movie movie) {
-        Toast.makeText(this, "Movie Titled "+movie.getOriginalTitle()+" was clicked", Toast.LENGTH_SHORT).show();
         Intent intent = new Intent(MainActivity.this, MovieDetailActivity.class);
-        intent.putExtra(Constants.MOVIE_EXTRA,movie); // TODO: 4/13/17  create movie contant
+        intent.putExtra(Constants.MOVIE_EXTRA,movie);
         startActivity(intent);
     }
 
@@ -99,7 +98,6 @@ public class MainActivity extends AppCompatActivity implements MovieAdapterOnCli
             URL movieRequsetUrl= NetworkUtils.buildUrl(sortType);
             try {
                 String JsonResponse = NetworkUtils.getResponseFromUrl(movieRequsetUrl);
-                Log.e(TAG, "doInBackground: "+JsonResponse.substring(0,20)+"JSon recieved" );
 
                 fetchedMovies = PopularMoviesJsonUtils.getMovieDataFromJson(JsonResponse);
 
@@ -115,7 +113,12 @@ public class MainActivity extends AppCompatActivity implements MovieAdapterOnCli
         protected void onPostExecute(ArrayList<Movie> movies) {
             super.onPostExecute(movies);
             progressBar.setVisibility(View.INVISIBLE);
-            prepareData(movies);
+            if (movies != null){
+                prepareData(movies);
+            }else{
+                showErrorMessageView();
+            }
+
         }
     }
 
@@ -139,5 +142,13 @@ public class MainActivity extends AppCompatActivity implements MovieAdapterOnCli
     }
 
 
-
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        if (getApplicationContext().getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT){
+            layoutManager.setSpanCount(2);
+        }else{
+            layoutManager.setSpanCount(4);
+        }
+    }
 }

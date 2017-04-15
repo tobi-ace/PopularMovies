@@ -1,5 +1,6 @@
 package com.tobi_ace.popularmovies;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.widget.ImageView;
@@ -26,13 +27,16 @@ public class MovieDetailActivity extends AppCompatActivity {
         tvPlotSynopsis = (TextView) findViewById(R.id.tv_plot_synopsis);
         tvUserRating = (TextView) findViewById(R.id.tv_user_rating);
 
+        Intent intent = getIntent();
+        if (intent != null && intent.hasExtra(Constants.MOVIE_EXTRA)){
+            Movie theMovie =  intent.getParcelableExtra(Constants.MOVIE_EXTRA);
 
-        Movie theMovie =  getIntent().getParcelableExtra(Constants.MOVIE_EXTRA);
-        Picasso.with(MovieDetailActivity.this).load(theMovie.getPosterPath()).into(ivDetailImage);
-        tvMovieTitle.setText(theMovie.getOriginalTitle());
-        tvReleaseDate.setText(theMovie.getReleaseDate());
-        tvPlotSynopsis.setText(theMovie.getOverview());
-        tvUserRating.setText(theMovie.getOverallRating()+"/10");
+            Picasso.with(MovieDetailActivity.this).load(theMovie.getPosterPath()).into(ivDetailImage);
+            tvMovieTitle.setText(theMovie.getOriginalTitle());
+            tvReleaseDate.setText(theMovie.getReleaseDate());
+            tvPlotSynopsis.setText(theMovie.getOverview());
+            tvUserRating.setText(theMovie.getOverallRating()+"/10");
+        }
 
     }
 }
