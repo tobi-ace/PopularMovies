@@ -3,9 +3,9 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
     android:layout_width="match_parent"
-    android:layout_height="250dp"
+    android:layout_height="@dimen/poster_card_height"
     android:clickable="true"
-    android:layout_margin="3dp"
+    android:layout_margin="@dimen/general_layout_margin"
     app:cardCornerRadius="@dimen/cardview_default_radius"
     android:elevation="5dp">
 

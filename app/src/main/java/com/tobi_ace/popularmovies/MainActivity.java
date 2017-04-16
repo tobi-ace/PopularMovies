@@ -7,7 +7,6 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -38,7 +37,7 @@ public class MainActivity extends AppCompatActivity implements MovieAdapterOnCli
     private RecyclerView recyclerView;
     private TextView errorText;
     private ProgressBar progressBar;
-    private StaggeredGridLayoutManager layoutManager;
+    private GridLayoutManager layoutManager;
 
 
     @Override
@@ -50,7 +49,7 @@ public class MainActivity extends AppCompatActivity implements MovieAdapterOnCli
 
         progressBar = (ProgressBar) findViewById(R.id.progress_bar);
         errorText = (TextView) findViewById(R.id.tv_error_text);
-        layoutManager = new StaggeredGridLayoutManager(2,GridLayoutManager.VERTICAL);
+        layoutManager = new GridLayoutManager(this, 2);
 
         recyclerView = (RecyclerView) findViewById(R.id.rv_movies);
 
