@@ -4,9 +4,13 @@ import android.content.Intent;
 import android.content.res.Configuration;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.AsyncTaskLoader;
+import android.support.v4.content.Loader;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -25,12 +29,14 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 
-public class MainActivity extends AppCompatActivity implements MovieAdapterOnClickHandler {
+public class MainActivity extends AppCompatActivity implements MovieAdapterOnClickHandler, LoaderManager.LoaderCallbacks<ArrayList<Movie>> {
 
     private static final String TAG = MainActivity.class.getSimpleName();
 
     private final String POPULAR = Constants.POPULAR;
     private final String TOP_RATED = Constants.TOP_RATED;
+    private final String SORT_TYPE_EXTRA = "sort_type";
+    private final int MOVIES_LOADER = 11;
 
 
     private MovieAdapter adapter;
@@ -52,7 +58,8 @@ public class MainActivity extends AppCompatActivity implements MovieAdapterOnCli
         layoutManager = new GridLayoutManager(this, 2);
 
         recyclerView = (RecyclerView) findViewById(R.id.rv_movies);
-
+        progressBar.setVisibility(View.INVISIBLE);
+        getSupportLoaderManager().initLoader(MOVIES_LOADER, null, this);
         loadMovies(POPULAR);
     }
 
@@ -66,7 +73,18 @@ public class MainActivity extends AppCompatActivity implements MovieAdapterOnCli
 
     private void loadMovies(String sortType) {
 
-        new FetchMoviesTask().execute(sortType);
+        Bundle bundle = new Bundle();
+        bundle.putString(SORT_TYPE_EXTRA, sortType);
+
+        LoaderManager manager = getSupportLoaderManager();
+        Loader<ArrayList<Movie>> loader = manager.getLoader(MOVIES_LOADER);
+
+        if (loader == null) {
+            manager.initLoader(MOVIES_LOADER, bundle, this);
+        } else {
+            manager.restartLoader(MOVIES_LOADER, bundle, this);
+        }
+
     }
 
     private void showErrorMessageView() {
@@ -80,6 +98,69 @@ public class MainActivity extends AppCompatActivity implements MovieAdapterOnCli
         Intent intent = new Intent(MainActivity.this, MovieDetailActivity.class);
         intent.putExtra(Constants.MOVIE_EXTRA,movie);
         startActivity(intent);
+    }
+
+    @Override
+    public Loader<ArrayList<Movie>> onCreateLoader(int id, final Bundle args) {
+        return new AsyncTaskLoader<ArrayList<Movie>>(this) {
+            ArrayList<Movie> movies;
+
+            @Override
+            protected void onStartLoading() {
+                if (args == null) {
+                    return;
+                }
+                progressBar.setVisibility(View.VISIBLE);
+
+                if (movies != null) {
+                    deliverResult(movies);
+                } else {
+                    forceLoad();
+                    Log.e(TAG, "onStartLoading: Started Loading");
+                }
+            }
+
+            @Override
+            public ArrayList<Movie> loadInBackground() {
+                ArrayList<Movie> fetchedMovies = null;
+                String sortType = args.getString(SORT_TYPE_EXTRA);
+                URL movieRequsetUrl = NetworkUtils.buildUrl(sortType);
+                String JsonResponse = null;
+                try {
+                    JsonResponse = NetworkUtils.getResponseFromUrl(movieRequsetUrl);
+                    Log.e(TAG, "loadInBackground: " + JsonResponse);
+                    fetchedMovies = PopularMoviesJsonUtils.getMovieDataFromJson(JsonResponse);
+                    Log.e(TAG, "loadInBackground: movie" + fetchedMovies.get(0).getOriginalTitle());
+                    return fetchedMovies;
+                } catch (Exception e) {
+                    Log.e(TAG, "loadInBackground: Unable to get movies");
+                    e.printStackTrace();
+                    return null;
+                }
+
+            }
+
+            @Override
+            public void deliverResult(ArrayList<Movie> data) {
+                movies = data;
+                super.deliverResult(data);
+            }
+        };
+    }
+
+    @Override
+    public void onLoadFinished(Loader<ArrayList<Movie>> loader, ArrayList<Movie> movies) {
+        progressBar.setVisibility(View.INVISIBLE);
+        if (movies != null) {
+            prepareData(movies);
+        } else {
+            showErrorMessageView();
+        }
+    }
+
+    @Override
+    public void onLoaderReset(Loader<ArrayList<Movie>> loader) {
+
     }
 
     class FetchMoviesTask extends AsyncTask<String, Void, ArrayList<Movie>>{
@@ -144,10 +225,10 @@ public class MainActivity extends AppCompatActivity implements MovieAdapterOnCli
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
-        if (getApplicationContext().getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT){
-            layoutManager.setSpanCount(2);
-        }else{
+        if (getApplicationContext().getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
             layoutManager.setSpanCount(4);
+        } else {
+            layoutManager.setSpanCount(3);
         }
     }
 }
