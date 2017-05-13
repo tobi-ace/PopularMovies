@@ -1,4 +1,4 @@
-package com.tobi_ace.popularmovies;
+package com.tobi_ace.popularmovies.adapters;
 
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;
@@ -9,6 +9,8 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 
 import com.squareup.picasso.Picasso;
+import com.tobi_ace.popularmovies.R;
+import com.tobi_ace.popularmovies.models.Movie;
 
 import java.util.ArrayList;
 
@@ -16,19 +18,19 @@ import java.util.ArrayList;
  * Created by abdulgafar on 4/9/17.
  */
 
- class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieAdapterViewHolder>{
+public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieAdapterViewHolder> {
     private static final String TAG = MovieAdapter.class.getSimpleName()
             ;
     private ArrayList<Movie> movies;
 
     private MovieAdapterOnClickHandler mClickHandler;
 
-    MovieAdapter(ArrayList<Movie> movies,MovieAdapterOnClickHandler clickHandler){
+    public MovieAdapter(ArrayList<Movie> movies, MovieAdapterOnClickHandler clickHandler) {
         mClickHandler = clickHandler;
         this.movies = movies;
     }
 
-    interface MovieAdapterOnClickHandler{
+    public interface MovieAdapterOnClickHandler {
         void onClick(Movie movie);
     }
 

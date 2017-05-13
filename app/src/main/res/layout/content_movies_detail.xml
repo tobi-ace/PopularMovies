@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.v4.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    app:layout_behavior="@string/appbar_scrolling_view_behavior"
+    tools:context="com.tobi_ace.popularmovies.MoviesDetailActivity"
+    tools:showIn="@layout/activity_movies_detail">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <android.support.v7.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="@dimen/general_layout_margin"
+            app:cardCornerRadius="@dimen/cardview_default_radius"
+            android:elevation="@dimen/cardview_default_elevation"
+            tools:targetApi="lollipop">
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <android.support.v7.widget.CardView
+                    android:layout_width="200dp"
+                    android:id="@+id/poster_card_view"
+                    android:layout_height="@dimen/poster_card_height"
+                    android:layout_margin="@dimen/general_layout_margin"
+                    app:cardCornerRadius="@dimen/cardview_default_radius"
+                    android:elevation="5dp">
+
+                    <ImageView
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:id="@+id/details_poster_image"
+                        android:scaleType="fitXY" />
+                </android.support.v7.widget.CardView>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/tv_movie_title"
+                    tools:text="Movie Title"
+                    android:layout_alignParentTop="true"
+                    android:layout_toEndOf="@+id/poster_card_view" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/tv_release_date"
+                    tools:text="Release Date"
+                    android:layout_below="@+id/tv_movie_title"
+                    android:layout_toEndOf="@+id/poster_card_view" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/tv_user_rating"
+                    tools:text="User Rating"
+                    android:layout_alignParentBottom="true"
+                    android:layout_toEndOf="@+id/poster_card_view" />
+            </RelativeLayout>
+        </android.support.v7.widget.CardView>
+
+        <android.support.v7.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="@dimen/general_layout_margin"
+            app:cardCornerRadius="@dimen/cardview_default_radius"
+            android:elevation="@dimen/cardview_default_elevation">
+
+            <RelativeLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/overview_text"
+                    android:textAppearance="@style/Base.TextAppearance.AppCompat.Headline"
+                    android:id="@+id/textView" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/tv_plot_synopsis"
+                    android:layout_marginStart="@dimen/body_text_margin_top"
+                    android:layout_marginLeft="@dimen/body_text_margin_top"
+                    android:textAppearance="@style/Base.TextAppearance.AppCompat.Caption"
+                    tools:text="Sample plot sysnopsis.Sample plot sysnopsis.Sample plot sysnopsis.Sample plot sysnopsis.Sample plot sysnopsis.Sample plot sysnopsis."
+                    android:layout_below="@+id/textView"
+                    android:layout_alignParentStart="true" />
+
+            </RelativeLayout>
+        </android.support.v7.widget.CardView>
+
+
+        <android.support.v7.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="@dimen/general_layout_margin"
+            app:cardCornerRadius="@dimen/cardview_default_radius"
+            android:elevation="@dimen/cardview_default_elevation">
+
+            <include
+                layout="@layout/trailers_and_reviews"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="16dp" />
+
+        </android.support.v7.widget.CardView>
+
+
+    </LinearLayout>
+
+
+</android.support.v4.widget.NestedScrollView>

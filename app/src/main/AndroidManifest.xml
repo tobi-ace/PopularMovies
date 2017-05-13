@@ -13,7 +13,6 @@
         android:theme="@style/AppTheme">
         <activity
             android:name=".MainActivity"
-            android:configChanges="orientation|screenSize"
             android:launchMode="singleTop">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -22,10 +21,19 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".MovieDetailActivity"
+            android:name=".MoviesDetailActivity"
+            android:label="@string/title_activity_movies_detail"
+            android:theme="@style/AppTheme.NoActionBar"
             android:parentActivityName=".MainActivity">
 
         </activity>
+
+        <provider
+            android:authorities="com.tobi_ace.popularmovies"
+            android:name=".data.FavoritesContentProvider"
+            android:exported="false">
+
+        </provider>
     </application>
 
 </manifest>

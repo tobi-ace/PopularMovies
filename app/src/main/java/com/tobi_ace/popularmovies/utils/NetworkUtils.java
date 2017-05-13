@@ -2,6 +2,8 @@ package com.tobi_ace.popularmovies.utils;
 
 import android.net.Uri;
 
+import com.tobi_ace.popularmovies.models.Movie;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
@@ -21,7 +23,7 @@ public class NetworkUtils {
 
     private static final String TMDB_BASE_IMAGE_URL = "https://image.tmdb.org/t/p";
 
-    private static final String API_KEY = "d1d397c8adf94068653d3465f3bf4f54"; //API key goes here
+    private static final String API_KEY = "d1d397c8adf94068653d3465f3bf4f54";//String.valueOf(R.string.api_key);
 
     private static final String API_KEY_PARAM = "api_key";
 
@@ -52,22 +54,32 @@ public class NetworkUtils {
         return url;
     }
 
-    public static String buildAbsolutePosterPath(String relativePosterPath){
+    public static String buildAbsoluteImagePath(String relativePosterPath) {
 
         Uri imageUri = Uri.parse(TMDB_BASE_IMAGE_URL).buildUpon()
                 .appendPath("w780")
                 .appendPath(relativePosterPath.substring(1,relativePosterPath.length()
-
-
-
-
-
-
-
-
                 )).build();
         return imageUri.toString();
 
+    }
+
+    public static URL buildTrailerUrl(Movie theMovie) throws MalformedURLException {
+        Uri videosUri = Uri.parse(TMDB_BASE_URL).buildUpon()
+                .appendPath(String.valueOf(theMovie.getId()))
+                .appendPath("videos")
+                .appendQueryParameter(API_KEY_PARAM, API_KEY)
+                .build();
+        return new URL(videosUri.toString());
+    }
+
+    public static URL buildReviewUrl(Movie theMovie) throws MalformedURLException {
+        Uri reviewUri = Uri.parse(TMDB_BASE_URL).buildUpon()
+                .appendPath(String.valueOf(theMovie.getId()))
+                .appendPath("reviews")
+                .appendQueryParameter(API_KEY_PARAM, API_KEY)
+                .build();
+        return new URL(reviewUri.toString());
     }
 
     public static String getResponseFromUrl(URL url) throws IOException {

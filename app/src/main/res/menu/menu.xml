@@ -11,4 +11,9 @@
         android:orderInCategory="1"
         android:title="@string/action_top_rated"
         app:showAsAction="never" />
+    <item
+        android:id="@+id/action_show_favorites"
+        android:orderInCategory="1"
+        android:title="@string/action_favorites"
+        app:showAsAction="never" />
 </menu>

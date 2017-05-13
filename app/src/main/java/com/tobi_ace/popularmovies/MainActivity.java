@@ -1,8 +1,7 @@
 package com.tobi_ace.popularmovies;
 
 import android.content.Intent;
-import android.content.res.Configuration;
-import android.os.AsyncTask;
+import android.database.Cursor;
 import android.os.Bundle;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.AsyncTaskLoader;
@@ -18,25 +17,29 @@ import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
-import com.tobi_ace.popularmovies.MovieAdapter.MovieAdapterOnClickHandler;
+import com.tobi_ace.popularmovies.adapters.MovieAdapter;
+import com.tobi_ace.popularmovies.adapters.MovieAdapter.MovieAdapterOnClickHandler;
+import com.tobi_ace.popularmovies.models.Movie;
 import com.tobi_ace.popularmovies.utils.Constants;
 import com.tobi_ace.popularmovies.utils.NetworkUtils;
 import com.tobi_ace.popularmovies.utils.PopularMoviesJsonUtils;
 
-import org.json.JSONException;
-
-import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 
-public class MainActivity extends AppCompatActivity implements MovieAdapterOnClickHandler, LoaderManager.LoaderCallbacks<ArrayList<Movie>> {
+import static com.tobi_ace.popularmovies.data.FavoritesContract.FavoritesEntry;
+
+public class MainActivity extends AppCompatActivity implements MovieAdapterOnClickHandler,
+        LoaderManager.LoaderCallbacks {
 
     private static final String TAG = MainActivity.class.getSimpleName();
 
-    private final String POPULAR = Constants.POPULAR;
-    private final String TOP_RATED = Constants.TOP_RATED;
-    private final String SORT_TYPE_EXTRA = "sort_type";
-    private final int MOVIES_LOADER = 11;
+    private static final String POPULAR = Constants.POPULAR;
+    private static final String TOP_RATED = Constants.TOP_RATED;
+    private static final String SORT_TYPE_EXTRA = "sort_type";
+
+    private static final int MOVIES_LOADER = 11;
+    private static final int FAVORITES_LOADER = 12;
 
 
     private MovieAdapter adapter;
@@ -45,6 +48,12 @@ public class MainActivity extends AppCompatActivity implements MovieAdapterOnCli
     private ProgressBar progressBar;
     private GridLayoutManager layoutManager;
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        progressBar.setVisibility(View.INVISIBLE);
+
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,6 +73,7 @@ public class MainActivity extends AppCompatActivity implements MovieAdapterOnCli
     }
 
     private void prepareData(ArrayList<Movie> movies) {
+        progressBar.setVisibility(View.INVISIBLE);
         adapter = new MovieAdapter(movies,MainActivity.this);
         recyclerView.setAdapter(adapter);
         recyclerView.setHasFixedSize(true);
@@ -77,7 +87,7 @@ public class MainActivity extends AppCompatActivity implements MovieAdapterOnCli
         bundle.putString(SORT_TYPE_EXTRA, sortType);
 
         LoaderManager manager = getSupportLoaderManager();
-        Loader<ArrayList<Movie>> loader = manager.getLoader(MOVIES_LOADER);
+        Loader loader = manager.getLoader(MOVIES_LOADER);
 
         if (loader == null) {
             manager.initLoader(MOVIES_LOADER, bundle, this);
@@ -87,7 +97,19 @@ public class MainActivity extends AppCompatActivity implements MovieAdapterOnCli
 
     }
 
+    private void loadFavoriteMovies() {
+        LoaderManager manager = getSupportLoaderManager();
+        Loader loader = manager.getLoader(MOVIES_LOADER);
+
+        if (loader == null) {
+            manager.initLoader(FAVORITES_LOADER, null, this);
+        } else {
+            manager.restartLoader(FAVORITES_LOADER, null, this);
+        }
+    }
+
     private void showErrorMessageView() {
+        progressBar.setVisibility(View.INVISIBLE);
         recyclerView.setVisibility(View.INVISIBLE);
         errorText.setVisibility(View.VISIBLE);
     }
@@ -95,112 +117,164 @@ public class MainActivity extends AppCompatActivity implements MovieAdapterOnCli
 
     @Override
     public void onClick(Movie movie) {
-        Intent intent = new Intent(MainActivity.this, MovieDetailActivity.class);
+        Intent intent = new Intent(MainActivity.this, MoviesDetailActivity.class);
         intent.putExtra(Constants.MOVIE_EXTRA,movie);
         startActivity(intent);
     }
 
     @Override
-    public Loader<ArrayList<Movie>> onCreateLoader(int id, final Bundle args) {
-        return new AsyncTaskLoader<ArrayList<Movie>>(this) {
-            ArrayList<Movie> movies;
+    public Loader onCreateLoader(int id, final Bundle args) {
 
-            @Override
-            protected void onStartLoading() {
-                if (args == null) {
-                    return;
+        switch (id) {
+            case MOVIES_LOADER:
+
+                return new AsyncTaskLoader<ArrayList<Movie>>(this) {
+                    ArrayList<Movie> movies;
+
+                    @Override
+                    protected void onStartLoading() {
+                        if (args == null) {
+                            return;
+                        }
+                        progressBar.setVisibility(View.VISIBLE);
+
+                        if (movies != null) {
+                            deliverResult(movies);
+                        } else {
+                            forceLoad();
+                        }
+                    }
+
+                    @Override
+                    public ArrayList<Movie> loadInBackground() {
+                        ArrayList<Movie> fetchedMovies = null;
+                        String sortType = args.getString(SORT_TYPE_EXTRA);
+                        URL movieRequsetUrl = NetworkUtils.buildUrl(sortType);
+                        String JsonResponse = null;
+                        try {
+                            JsonResponse = NetworkUtils.getResponseFromUrl(movieRequsetUrl);
+                            fetchedMovies = PopularMoviesJsonUtils.getMoviesFromJson(JsonResponse);
+                            return fetchedMovies;
+                        } catch (Exception e) {
+                            Log.e(TAG, "loadInBackground: Unable to get movies");
+                            e.printStackTrace();
+                            return null;
+                        }
+
+                    }
+
+                    @Override
+                    public void deliverResult(ArrayList<Movie> data) {
+                        movies = data;
+                        super.deliverResult(data);
+                    }
+                };
+
+
+            case FAVORITES_LOADER:
+
+                return new AsyncTaskLoader<Cursor>(this) {
+
+                    Cursor cursor;
+
+                    @Override
+                    protected void onStartLoading() {
+
+                        progressBar.setVisibility(View.VISIBLE);
+
+                        if (cursor != null) {
+                            deliverResult(cursor);
+                        } else {
+                            forceLoad();
+                        }
+
+                    }
+
+                    @Override
+                    public Cursor loadInBackground() {
+
+                        try {
+                            return getContentResolver().query(
+                                    FavoritesEntry.CONTENT_URI,
+                                    null,
+                                    null,
+                                    null,
+                                    FavoritesEntry._ID
+                            );
+                        } catch (Exception e) {
+                            Log.e(TAG, "loadInBackground: Unable to load data");
+                            e.printStackTrace();
+                            return null;
+                        }
+
+                    }
+
+                    @Override
+                    public void deliverResult(Cursor data) {
+
+                        cursor = data;
+
+                        super.deliverResult(data);
+                    }
+                };
+
+
+        }
+
+        return null;
+    }
+
+    @Override
+    public void onLoadFinished(Loader loader, Object data) {
+
+        int id = loader.getId();
+        ArrayList<Movie> movies;
+        switch (id) {
+            case MOVIES_LOADER:
+
+                movies = (ArrayList<Movie>) data;
+                progressBar.setVisibility(View.INVISIBLE);
+                if (movies != null) {
+                    prepareData(movies);
+                } else {
+                    showErrorMessageView();
                 }
-                progressBar.setVisibility(View.VISIBLE);
+
+                break;
+            case FAVORITES_LOADER:
+
+                Cursor cursor = (Cursor) data;
+                movies = new ArrayList<Movie>();
+
+                while (cursor.moveToNext()) {
+                    Movie movie = new Movie();
+                    movie.setOriginalTitle(cursor.getString(cursor.getColumnIndex(FavoritesEntry.COLUMN_MOVIE_TITLE)));
+                    movie.setId(cursor.getInt(cursor.getColumnIndex(FavoritesEntry.COLUMN_MOVIE_ID)));
+                    movie.setPosterPath(cursor.getString(cursor.getColumnIndex(FavoritesEntry.COLUMN_POSTER_PATH)));
+                    movie.setBackdropPath(cursor.getString(cursor.getColumnIndex(FavoritesEntry.COLUMN_BACKDROP_PATH)));
+                    movie.setOverview(cursor.getString(cursor.getColumnIndex(FavoritesEntry.COLUMN_OVERVIEW)));
+                    movie.setOverallRating(cursor.getString(cursor.getColumnIndex(FavoritesEntry.COLUMN_VOTE_AVERAGE)));
+                    movie.setReleaseDate(cursor.getString(cursor.getColumnIndex(FavoritesEntry.COLUMN_RLEASE_DATE)));
+                    movie.setFavorite(true);
+                    movies.add(movie);
+                }
 
                 if (movies != null) {
-                    deliverResult(movies);
+                    prepareData(movies);
                 } else {
-                    forceLoad();
-                    Log.e(TAG, "onStartLoading: Started Loading");
+                    showErrorMessageView();
                 }
-            }
+                ;
+                break;
+        }
 
-            @Override
-            public ArrayList<Movie> loadInBackground() {
-                ArrayList<Movie> fetchedMovies = null;
-                String sortType = args.getString(SORT_TYPE_EXTRA);
-                URL movieRequsetUrl = NetworkUtils.buildUrl(sortType);
-                String JsonResponse = null;
-                try {
-                    JsonResponse = NetworkUtils.getResponseFromUrl(movieRequsetUrl);
-                    Log.e(TAG, "loadInBackground: " + JsonResponse);
-                    fetchedMovies = PopularMoviesJsonUtils.getMovieDataFromJson(JsonResponse);
-                    Log.e(TAG, "loadInBackground: movie" + fetchedMovies.get(0).getOriginalTitle());
-                    return fetchedMovies;
-                } catch (Exception e) {
-                    Log.e(TAG, "loadInBackground: Unable to get movies");
-                    e.printStackTrace();
-                    return null;
-                }
-
-            }
-
-            @Override
-            public void deliverResult(ArrayList<Movie> data) {
-                movies = data;
-                super.deliverResult(data);
-            }
-        };
     }
 
     @Override
-    public void onLoadFinished(Loader<ArrayList<Movie>> loader, ArrayList<Movie> movies) {
-        progressBar.setVisibility(View.INVISIBLE);
-        if (movies != null) {
-            prepareData(movies);
-        } else {
-            showErrorMessageView();
-        }
-    }
-
-    @Override
-    public void onLoaderReset(Loader<ArrayList<Movie>> loader) {
+    public void onLoaderReset(Loader loader) {
 
     }
 
-    class FetchMoviesTask extends AsyncTask<String, Void, ArrayList<Movie>>{
-
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-            progressBar.setVisibility(View.VISIBLE);
-        }
-
-        @Override
-        protected ArrayList<Movie> doInBackground(String... params) {
-            ArrayList<Movie> fetchedMovies = null;
-            String sortType = params[0];
-            URL movieRequsetUrl= NetworkUtils.buildUrl(sortType);
-            try {
-                String JsonResponse = NetworkUtils.getResponseFromUrl(movieRequsetUrl);
-
-                fetchedMovies = PopularMoviesJsonUtils.getMovieDataFromJson(JsonResponse);
-
-            } catch (IOException e) {
-                e.printStackTrace();
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-            return fetchedMovies;
-        }
-
-        @Override
-        protected void onPostExecute(ArrayList<Movie> movies) {
-            super.onPostExecute(movies);
-            progressBar.setVisibility(View.INVISIBLE);
-            if (movies != null){
-                prepareData(movies);
-            }else{
-                showErrorMessageView();
-            }
-
-        }
-    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -217,18 +291,11 @@ public class MainActivity extends AppCompatActivity implements MovieAdapterOnCli
             return true;
         }else if (itemId == R.id.action_show_top_rated){
             loadMovies(TOP_RATED);
+        } else if (itemId == R.id.action_show_favorites) {
+            loadFavoriteMovies();
         }
         return super.onOptionsItemSelected(item);
     }
 
 
-    @Override
-    public void onConfigurationChanged(Configuration newConfig) {
-        super.onConfigurationChanged(newConfig);
-        if (getApplicationContext().getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
-            layoutManager.setSpanCount(4);
-        } else {
-            layoutManager.setSpanCount(3);
-        }
-    }
 }
