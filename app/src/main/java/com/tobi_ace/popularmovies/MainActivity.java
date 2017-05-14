@@ -1,8 +1,10 @@
 package com.tobi_ace.popularmovies;
 
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.database.Cursor;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.AsyncTaskLoader;
 import android.support.v4.content.Loader;
@@ -36,17 +38,42 @@ public class MainActivity extends AppCompatActivity implements MovieAdapterOnCli
 
     private static final String POPULAR = Constants.POPULAR;
     private static final String TOP_RATED = Constants.TOP_RATED;
+    private static final String FAVORITE = Constants.FAVORITE;
     private static final String SORT_TYPE_EXTRA = "sort_type";
+    private static final String BUNDLE_RECYCLER_LAYOUT = "recycler_view";
+    private static final String SORT_ORDER_KEY = "sort_order";
+
 
     private static final int MOVIES_LOADER = 11;
     private static final int FAVORITES_LOADER = 12;
 
+    private String mSortOrder;
 
     private MovieAdapter adapter;
     private RecyclerView recyclerView;
     private TextView errorText;
     private ProgressBar progressBar;
     private GridLayoutManager layoutManager;
+
+
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+        if (savedInstanceState != null) {
+            if (savedInstanceState.containsKey(BUNDLE_RECYCLER_LAYOUT)) {
+
+                Parcelable savedRecylerLayoutState = savedInstanceState.getParcelable(BUNDLE_RECYCLER_LAYOUT);
+                layoutManager.onRestoreInstanceState(savedRecylerLayoutState);
+            }
+        }
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putParcelable(BUNDLE_RECYCLER_LAYOUT, layoutManager.onSaveInstanceState());
+        outState.putString(SORT_ORDER_KEY, mSortOrder);
+    }
 
     @Override
     protected void onResume() {
@@ -60,29 +87,43 @@ public class MainActivity extends AppCompatActivity implements MovieAdapterOnCli
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-
+        boolean orienrtationIsPotrait = this.getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT;
+        int GRID_SPAN_COUNT = orienrtationIsPotrait ? 2 : 4;
 
         progressBar = (ProgressBar) findViewById(R.id.progress_bar);
         errorText = (TextView) findViewById(R.id.tv_error_text);
-        layoutManager = new GridLayoutManager(this, 2);
+        layoutManager = new GridLayoutManager(this, GRID_SPAN_COUNT);
 
         recyclerView = (RecyclerView) findViewById(R.id.rv_movies);
         progressBar.setVisibility(View.INVISIBLE);
         getSupportLoaderManager().initLoader(MOVIES_LOADER, null, this);
-        loadMovies(POPULAR);
+
+        if (savedInstanceState != null) {
+
+            String sortType = savedInstanceState.getString(SORT_ORDER_KEY);
+            if (sortType.equals(FAVORITE)) {
+                loadFavoriteMovies();
+            } else {
+                loadMovies(sortType);
+            }
+        } else {
+            loadMovies(POPULAR);
+        }
     }
 
     private void prepareData(ArrayList<Movie> movies) {
         progressBar.setVisibility(View.INVISIBLE);
-        adapter = new MovieAdapter(movies,MainActivity.this);
+        adapter = new MovieAdapter(movies, MainActivity.this);
         recyclerView.setAdapter(adapter);
         recyclerView.setHasFixedSize(true);
-        recyclerView.setLayoutManager(layoutManager);errorText.setVisibility(View.INVISIBLE);
+        recyclerView.setLayoutManager(layoutManager);
+        errorText.setVisibility(View.INVISIBLE);
         recyclerView.setVisibility(View.VISIBLE);
     }
 
     private void loadMovies(String sortType) {
 
+        mSortOrder = sortType;
         Bundle bundle = new Bundle();
         bundle.putString(SORT_TYPE_EXTRA, sortType);
 
@@ -98,6 +139,8 @@ public class MainActivity extends AppCompatActivity implements MovieAdapterOnCli
     }
 
     private void loadFavoriteMovies() {
+
+        mSortOrder = FAVORITE;
         LoaderManager manager = getSupportLoaderManager();
         Loader loader = manager.getLoader(MOVIES_LOADER);
 
@@ -118,7 +161,7 @@ public class MainActivity extends AppCompatActivity implements MovieAdapterOnCli
     @Override
     public void onClick(Movie movie) {
         Intent intent = new Intent(MainActivity.this, MoviesDetailActivity.class);
-        intent.putExtra(Constants.MOVIE_EXTRA,movie);
+        intent.putExtra(Constants.MOVIE_EXTRA, movie);
         startActivity(intent);
     }
 
@@ -279,17 +322,17 @@ public class MainActivity extends AppCompatActivity implements MovieAdapterOnCli
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.menu,menu);
+        inflater.inflate(R.menu.menu, menu);
         return true;
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int itemId = item.getItemId();
-        if (itemId == R.id.action_show_most_popular){
+        if (itemId == R.id.action_show_most_popular) {
             loadMovies(POPULAR);
             return true;
-        }else if (itemId == R.id.action_show_top_rated){
+        } else if (itemId == R.id.action_show_top_rated) {
             loadMovies(TOP_RATED);
         } else if (itemId == R.id.action_show_favorites) {
             loadFavoriteMovies();

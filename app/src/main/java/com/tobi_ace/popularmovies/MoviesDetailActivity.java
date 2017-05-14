@@ -163,7 +163,6 @@ public class MoviesDetailActivity extends AppCompatActivity implements LoaderMan
 
     private void addMovieToFavourites(Movie theMovie) {
         theMovie.setFavorite(true);
-        Toast.makeText(this, theMovie.isFavorite() + " ", Toast.LENGTH_SHORT).show();
         ContentValues cv = new ContentValues();
         cv.put(FavoritesEntry.COLUMN_MOVIE_TITLE, theMovie.getOriginalTitle());
         cv.put(FavoritesEntry.COLUMN_MOVIE_ID, theMovie.getId());

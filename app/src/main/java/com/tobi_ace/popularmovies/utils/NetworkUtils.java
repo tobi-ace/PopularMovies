@@ -1,5 +1,6 @@
 package com.tobi_ace.popularmovies.utils;
 
+import android.content.Context;
 import android.net.Uri;
 
 import com.tobi_ace.popularmovies.models.Movie;
@@ -16,6 +17,7 @@ import java.util.Scanner;
  */
 
 public class NetworkUtils {
+    public static Context context;
 
     private static final String TAG = NetworkUtils.class.getSimpleName();
 
@@ -23,7 +25,7 @@ public class NetworkUtils {
 
     private static final String TMDB_BASE_IMAGE_URL = "https://image.tmdb.org/t/p";
 
-    private static final String API_KEY = "d1d397c8adf94068653d3465f3bf4f54";//String.valueOf(R.string.api_key);
+    private static final String API_KEY = "";// API key
 
     private static final String API_KEY_PARAM = "api_key";
 

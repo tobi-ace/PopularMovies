@@ -4,7 +4,10 @@ package com.tobi_ace.popularmovies.utils;
  * Created by abdulgafar on 4/15/17.
  */
 
-public class Constants {
+final public class Constants {
+
+    private Constants() {
+    }
 
     public static final String TOP_RATED = "top_rated";
 
@@ -12,4 +15,5 @@ public class Constants {
 
     public static final String MOVIE_EXTRA = "Movie_extra";
 
+    public static final String FAVORITE = "Favorite";
 }
